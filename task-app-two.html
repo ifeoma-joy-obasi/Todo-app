@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>task app by joy</title>
+    <link rel="stylesheet" href="./task-app-two.css">
+</head>
+<body>
+<div class="box">
+    <div>
+        <label for="" class="label">Enter task</label><br>
+        <input type="text" id="taskInput" placeholder="enter task" class="task-input">
+        <button id="addBtn" class="add-task">Add Task</button>
+    </div>
+
+    <ul class="task-list" id="taskList">
+        <div id="error" class="error-message"></div>
+
+    </ul>
+</div>
+<!--html for modal -->
+<div class="modal-overlay close" id="modal">
+    <!-- modal -->
+<div class="modal-content">
+<div class="modal-header">
+    <h3>Edit task</h3>
+    <button class="close-button" id="closeButton">&#x2715;</button>
+</div>
+<div>
+    <textarea 
+    name="textArea"
+    id="textArea" 
+    cols="30"
+    rows="10"></textarea>
+    <div class="btn-box"><button id="editButton">Save Changes</button></div>
+</div>
+</div>
+</div>
+
+<script>
+    //variables
+    const error = document.querySelector('#error');
+    const addTask = document.querySelector('#addBtn');
+    const taskInput = document.querySelector('#taskInput');
+    const closeButton = document.querySelector('#closeButton');
+    const modal = document.querySelector('#modal');
+    const editButton = document.querySelector('#editButton');
+    const textArea = document.querySelector('#textArea')
+    //state
+    const taskDetails = {
+        taskList: [],//{id, label}
+
+        setTaskList: function (filteredList){
+            this.taskList = filteredList;
+        updateUi();
+        },
+
+        addToTaskList: function(input){
+            this.taskList.push(input)
+            updateUi();
+        },
+        setTaskListWithModalValue:  function (filteredModalList){
+            this.taskList = filteredModalList;
+        updateUi();
+        },
+    }
+    
+    //modal code
+    closeButton.addEventListener('click', ()=>{
+        closeModal()
+    })
+    const closeModal = ()=>{
+    if(modal.classList.contains('close')){
+        return;
+    }else{
+        modal.classList.add('close')
+    }
+    }
+
+    const toggleModal = (id)=>{
+        modal.classList.toggle('close')
+        taskDetails.taskList.find((item)=>{
+            if(item.id === id){
+                textArea.value = item.label;
+                
+            }
+        
+        })
+        //so that we can use this id outside of the toggleModal function
+        updatedArray(id)
+    }
+    
+    
+    
+    //am using this function so that i can access the id to know which element was actually clicked
+    let updatedArray = (id)=>{
+        editButton.addEventListener('click', ()=>{
+        
+        //update ui with new value of texArea value
+        const newObj = {id: Date.now(), label: textArea.value}
+        const filteredModalList = taskDetails.taskList.map((originalObject)=>{
+            //check if the id in the array matches the one the user clicked
+            if(originalObject.id === id){
+                // if it is, return a new object with the updated properties
+                return newObj;
+                
+            }else{
+                //otherwise we want to return the original object
+                return originalObject;
+            }
+            
+        })
+        
+        taskDetails.setTaskListWithModalValue(filteredModalList);
+        
+        
+        
+    closeModal()
+    })
+    }
+    
+    
+    //helpers
+    const truncateWord  = (input, numberOfCharacter =  12) =>{
+    if(input.length > numberOfCharacter){
+        return `${input.slice(0, numberOfCharacter)}...`
+    }
+    return input;
+    }
+    
+    
+    const throwErrorMessage = () =>{
+        error.innerText = `please enter a todo task`
+        document.querySelector('#taskList').appendChild(error)
+    }
+    
+    
+    const createDate = ()=>{
+        //input string
+        let origString = new Date().toLocaleDateString('en-GB',{
+            day:'numeric',
+            month:'short', 
+            year:'numeric',
+            hour12: true,
+            hour: 'numeric', 
+            minute:'numeric'})
+            //string to be added
+            let stringToAdd = ','
+            //position to add string
+            let indexPosition = 1;
+            //split the string into individual characters
+            origString = origString.split('')
+            //insert the string at the index position
+            origString.splice(indexPosition, 0, stringToAdd)
+            //join back the individual characters to form a new string
+            newString = origString.join('')
+            //display newstring
+            return newString;
+    }
+    
+    const deleteTask = (id) =>{
+        const filteredList = taskDetails.taskList.filter((task)=>{
+            return task.id !== id;
+        })
+        taskDetails.setTaskList(filteredList);
+    }
+
+    //updating the ui
+let liOne = document.createElement('li');
+    const updateUi = ()=>{
+        document.querySelector('#taskList').innerHTML = ''
+        taskDetails.taskList.forEach((task, index)=>{
+            let liOne = document.createElement('li');
+        liOne.innerHTML = `<div><span>${truncateWord(
+            task.label
+        )} <span>${createDate()}</span></span> <span class='delete' onclick='deleteTask(
+        ${task.id}
+        ) '>Delete</span><span class='edit' id="openModalBtn" onclick='toggleModal( ${task.id})'>Edit</span></div>`;
+        
+        
+        document.querySelector('#taskList').appendChild(liOne);
+        
+        })
+        
+    }
+    
+    const updateTaskList = (input)=>{
+    taskDetails.addToTaskList(input)
+    }
+    
+    addTask.addEventListener('click', ()=>{
+    
+    if(taskInput.value.length > 0){
+    updateTaskList({id: Date.now(), label: taskInput.value})
+    taskInput.value = ''
+    }
+    else{
+    throwErrorMessage()
+    }
+    })
+    
+
+    taskInput.addEventListener('keyup', (e)=>{
+    if(e.key.toLowerCase() === 'enter' && taskInput.value.length > 0){
+    updateTaskList({id: Date.now(), label: taskInput.value})
+    taskInput.value = ''
+    }else if(taskInput.value.length == 0){
+        throwErrorMessage();
+    }
+    })
+    
+document.addEventListener('DOMContentLoaded', ()=>{
+    updateUi();
+})
+
+
+
+</script>
+</body>
+</html>
