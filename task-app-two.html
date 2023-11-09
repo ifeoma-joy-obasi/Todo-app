@@ -18,6 +18,7 @@
         <div id="error" class="error-message"></div>
 
     </ul>
+    <li id="hii"></li>
 </div>
 <!--html for modal -->
 <div class="modal-overlay close" id="modal">
@@ -47,9 +48,11 @@
     const modal = document.querySelector('#modal');
     const editButton = document.querySelector('#editButton');
     const textArea = document.querySelector('#textArea')
+    
+    
     //state
     const taskDetails = {
-        taskList: [],//{id, label}
+        taskList: [],
 
         setTaskList: function (filteredList){
             this.taskList = filteredList;
@@ -114,17 +117,16 @@
         
         taskDetails.setTaskListWithModalValue(filteredModalList);
         
-        
-        
     closeModal()
     })
     }
     
     
     //helpers
+    
     const truncateWord  = (input, numberOfCharacter =  12) =>{
     if(input.length > numberOfCharacter){
-        return `${input.slice(0, numberOfCharacter)}...`
+        return `${input.slice(0, numberOfCharacter)} <button id="remainder" class="remainder">...</button>`
     }
     return input;
     }
@@ -170,7 +172,7 @@
 let liOne = document.createElement('li');
     const updateUi = ()=>{
         document.querySelector('#taskList').innerHTML = ''
-        taskDetails.taskList.forEach((task, index)=>{
+        taskDetails.taskList.forEach((task, index)=>{   
             let liOne = document.createElement('li');
         liOne.innerHTML = `<div><span>${truncateWord(
             task.label
@@ -181,9 +183,24 @@ let liOne = document.createElement('li');
         
         document.querySelector('#taskList').appendChild(liOne);
         
+        const remainingWords = liOne.querySelector('#remainder');
+
+        if(remainingWords){
+        remainingWords.addEventListener("mouseenter", () => {
+        remainingWords.title = task.label;
+        
+        })
+        }else{
+            remainingWords.addEventListener("mouseleave", () => {
+                remainingWords.title = ''
+            });
+        }
+        
         })
         
     }
+
+
     
     const updateTaskList = (input)=>{
     taskDetails.addToTaskList(input)
